@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Brunch-Time?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f5e6d3;
+            font-family: Georgia, serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            color: #5a4a3a;
+            font-size: 32px;
+            font-style: italic;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #photo-container {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #photo {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #question {
+            color: #5a4a3a;
+            font-size: 16px;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+
+        #button-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 220px;
+            margin-top: 20px;
+        }
+
+        #ja-button {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #ffb366 0%, #ff8c42 100%);
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            padding: 20px 80px;
+            border-radius: 50px;
+            border: none;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+        }
+
+        #ja-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        #nein-button {
+            position: absolute;
+            background: linear-gradient(180deg, #6a6a6a 0%, #5a5a5a 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px 25px;
+            border-radius: 25px;
+            border: none;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 5;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        #success-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffe8f0;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #success-message {
+            color: #ff1493;
+            font-size: 45px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+            
+            #question {
+                font-size: 15px;
+            }
+
+            #ja-button {
+                font-size: 45px;
+                padding: 18px 70px;
+            }
+
+            #success-message {
+                font-size: 35px;
+            }
+
+            #button-container {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Brunch-Time?</h1>
+    
+    <div id="photo-container">
+        <img id="photo" src="BabeeIch.png" alt="Unser Foto" onerror="this.style.display='none'">
+    </div>
+
+    <p id="question">
+        Hallo kleine Babe, hast du Lust, mit mir<br>
+        am 22.02 zum Brunch zu gehen und den<br>
+        Tag gemeinsam zu genießen?
+    </p>
+
+    <div id="button-container">
+        <button id="ja-button" onclick="accepted()">JA!</button>
+        <button id="nein-button">nein</button>
+    </div>
+
+    <div id="success-screen">
+        <div id="success-message">
+            YESS! ❤️<br><br>
+            Ich reserviere<br>
+            den Tisch!
+        </div>
+    </div>
+
+    <script>
+        const neinButton = document.getElementById('nein-button');
+        const jaButton = document.getElementById('ja-button');
+        const container = document.getElementById('button-container');
+        
+        // Positionen relativ zum Container (in Prozent für besseres Responsive)
+        let neinPositions = [
+            {left: '8%', top: '10px'},
+            
+            {left: '75%', top: '10px'},
+            {left: '8%', top: '140px'},
+            {left: '30%', top: '140px'},
+            {left: '50%', top: '140px'},
+            {left: '70%', top: '140px'}
+        ];
+
+        let currentJaSize = 50;
+        let movementEnabled = false;
+        let lastPositionIndex = -1;
+
+        // Setze zufällige Startposition
+        function setRandomPosition() {
+            const randomIndex = Math.floor(Math.random() * neinPositions.length);
+            const pos = neinPositions[randomIndex];
+            neinButton.style.left = pos.left;
+            neinButton.style.top = pos.top;
+            lastPositionIndex = randomIndex;
+        }
+
+        setRandomPosition();
+
+        // Aktiviere Bewegung nach 800ms
+        setTimeout(() => {
+            movementEnabled = true;
+            console.log('Movement enabled');
+        }, 800);
+
+        function moveNein(event) {
+            if (!movementEnabled) {
+                console.log('Movement not enabled yet');
+                return;
+            }
+
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            console.log('Moving nein button');
+
+            // Wähle neue Position (nicht die aktuelle)
+            let availableIndices = [];
+            for (let i = 0; i < neinPositions.length; i++) {
+                if (i !== lastPositionIndex) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            const newPos = neinPositions[randomIndex];
+            
+            neinButton.style.left = newPos.left;
+            neinButton.style.top = newPos.top;
+            lastPositionIndex = randomIndex;
+
+            // JA vergrößern
+            if (currentJaSize < 70) {
+                currentJaSize += 5;
+                jaButton.style.fontSize = currentJaSize + 'px';
+                const paddingV = 20 + (currentJaSize - 50) / 2;
+                const paddingH = 80 + (currentJaSize - 50);
+                jaButton.style.padding = paddingV + 'px ' + paddingH + 'px';
+            }
+        }
+
+        // Für Touch-Geräte (Handy) - wichtigster Event!
+        neinButton.addEventListener('touchstart', moveNein, {passive: false});
+        
+        // Für Maus (Computer)
+        neinButton.addEventListener('mouseenter', moveNein);
+        neinButton.addEventListener('click', moveNein);
+
+        // Verhindere Klick auf NEIN
+        neinButton.addEventListener('click', (e) => {
+            e.preventDefault();
+        });
+
+        function accepted() {
+            document.getElementById('success-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
